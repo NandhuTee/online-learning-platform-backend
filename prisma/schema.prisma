@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  email     String   @unique
+  password  String
+  role      String   @default("student")
+  createdAt DateTime @default(now())
+
+  // 🔥 Required relation (this fixes your error!)
+  enrollments Enrollment[]
+
+  // 🔥 Reset password fields
+  resetOtp        String?
+  resetOtpExpires DateTime?
+}
+
+model Course {
+  id        String   @id @default(uuid())
+  title     String
+  description String
+  thumbnail  String?
+  price      Float?
+  isFree     Boolean @default(true)
+  videos     Video[]
+}
+
+
+model Video {
+  id        String   @id @default(uuid())
+  title     String
+  videoUrl  String
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  userId    Int
+  courseId  String
+  createdAt DateTime @default(now())
+
+  course Course @relation(fields: [courseId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+}
